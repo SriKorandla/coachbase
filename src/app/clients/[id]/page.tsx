@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CheckInForm } from "@/components/CheckInForm";
 import { CheckInList } from "@/components/CheckInList";
+import { ClientLinks } from "@/components/ClientLinks";
+import { ClientNotesDb } from "@/components/ClientNotesDb";
+import { ClientPageBody } from "@/components/ClientPageBody";
+import { DeleteClientButton } from "@/components/DeleteClientButton";
+import { EditClientProfile } from "@/components/EditClientProfile";
 import { ProgressCharts } from "@/components/ProgressCharts";
 import { useCoach } from "@/lib/coach-context";
 import {
@@ -15,7 +20,7 @@ import {
 
 export default function ClientDetailPage() {
   const params = useParams<{ id: string }>();
-  const { clients, checkIns, ready } = useCoach();
+  const { clients, checkIns, ready, updateClient } = useCoach();
 
   if (!ready) {
     return <p className="text-sm text-ink-muted">Loading…</p>;
@@ -73,7 +78,25 @@ export default function ClientDetailPage() {
             </span>
           )}
         </div>
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-4">
+          <EditClientProfile client={client} />
+          <DeleteClientButton clientId={client.id} clientName={client.name} />
+        </div>
       </div>
+
+      <section className="space-y-6">
+        <div>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">
+            Workspace
+          </h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Page notes, program links, and a notes database for this client.
+          </p>
+        </div>
+        <ClientPageBody client={client} onSaved={updateClient} />
+        <ClientLinks clientId={client.id} />
+        <ClientNotesDb clientId={client.id} />
+      </section>
 
       <section>
         <h2 className="mb-4 font-display text-2xl font-semibold tracking-tight">

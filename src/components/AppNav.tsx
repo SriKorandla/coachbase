@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const links = [
   { href: "/", label: "Dashboard" },
@@ -11,6 +12,20 @@ const links = [
 
 export function AppNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.replace("/login");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <header className="border-b border-line bg-surface">
@@ -34,15 +49,21 @@ export function AppNav() {
                 key={link.href}
                 href={link.href}
                 className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  active
-                    ? "text-signal"
-                    : "text-ink-muted hover:text-ink"
+                  active ? "text-signal" : "text-ink-muted hover:text-ink"
                 }`}
               >
                 {link.label}
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            disabled={loggingOut}
+            className="ml-1 px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink disabled:opacity-60"
+          >
+            {loggingOut ? "…" : "Log out"}
+          </button>
         </nav>
       </div>
     </header>

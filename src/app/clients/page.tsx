@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AddClientForm } from "@/components/AddClientForm";
 import { ClientCard } from "@/components/ClientCard";
 import { useCoach } from "@/lib/coach-context";
 import {
@@ -12,6 +13,7 @@ import {
 export default function ClientsPage() {
   const { clients, checkIns, ready } = useCoach();
   const [query, setQuery] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -30,14 +32,32 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Clients
-        </h1>
-        <p className="mt-2 text-sm text-ink-muted sm:text-base">
-          Your PT roster. Open a client for check-ins and progress charts.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            Clients
+          </h1>
+          <p className="mt-2 text-sm text-ink-muted sm:text-base">
+            Your PT roster. Open a client for workspace, check-ins, and progress.
+          </p>
+        </div>
+        {!showForm ? (
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="bg-ink px-4 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-signal"
+          >
+            Add client
+          </button>
+        ) : null}
       </div>
+
+      {showForm ? (
+        <AddClientForm
+          onCreated={() => setShowForm(false)}
+          onCancel={() => setShowForm(false)}
+        />
+      ) : null}
 
       <label className="block max-w-md">
         <span className="sr-only">Search clients</span>
@@ -52,7 +72,9 @@ export default function ClientsPage() {
 
       {filtered.length === 0 ? (
         <p className="border border-dashed border-line bg-surface px-5 py-8 text-center text-sm text-ink-muted">
-          No clients match “{query}”.
+          {clients.length === 0
+            ? "No clients yet. Add your first client above."
+            : `No clients match “${query}”.`}
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
