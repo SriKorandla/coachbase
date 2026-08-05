@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree, Syne } from "next/font/google";
-import { AppNav } from "@/components/AppNav";
-import { CoachProvider } from "@/lib/coach-context";
+import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 const syne = Syne({
@@ -29,12 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${figtree.variable} h-full`}>
       <body className="min-h-full antialiased">
-        <CoachProvider>
-          <AppNav />
-          <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-            {children}
-          </main>
-        </CoachProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
