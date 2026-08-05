@@ -7,6 +7,8 @@ export const CLIENTS: Client[] = [
     goal: "Add 20 lb to squat, compete local meet",
     startDate: "2025-11-03",
     notes: "Competes powerlifting. Prefers morning sessions.",
+    pageBody:
+      "## Current block\nPeaking for local meet — intensity week next.\n\n## Focus cues\n- Brace before every squat\n- Keep bar path vertical on bench",
   },
   {
     id: "c2",
@@ -14,6 +16,8 @@ export const CLIENTS: Client[] = [
     goal: "Recomp — lose fat, keep strength",
     startDate: "2025-12-15",
     notes: "Travel weeks every other month.",
+    pageBody:
+      "## Nutrition\nProtein target 180g. Travel weeks: hotel gym + bodyweight fallback.\n\n## Strength hold\nKeep main lifts at RPE 7–8 while cutting.",
   },
   {
     id: "c3",
@@ -21,12 +25,16 @@ export const CLIENTS: Client[] = [
     goal: "Return from knee injury, rebuild base",
     startDate: "2026-01-06",
     notes: "No deep knee flexion past RPE 7 yet.",
+    pageBody:
+      "## Rehab notes\nCleared for deeper squat next block. Still avoid bouncing out of the hole.\n\n## PT liaison\nCheck in with physio every 4 weeks.",
   },
   {
     id: "c4",
     name: "Alex Rivera",
     goal: "Hypertrophy — upper body focus",
     startDate: "2025-10-20",
+    pageBody:
+      "## Volume bias\nPush pull volume; squat maintained 1x/week.\n\n## Sleep\nWatch late nights — form drops when under-recovered.",
   },
   {
     id: "c5",
@@ -34,6 +42,92 @@ export const CLIENTS: Client[] = [
     goal: "General strength + consistency",
     startDate: "2026-02-02",
     notes: "New to structured programming.",
+    pageBody:
+      "## Onboarding\nLearning squat/hinge cues. Aim for 3 sessions/week before adding a 4th.",
+  },
+];
+
+export const SEED_LINKS = [
+  {
+    id: "link-m1",
+    clientId: "c1",
+    label: "Training sheet",
+    url: "https://docs.google.com/spreadsheets/d/example-maya-program",
+    sortOrder: 0,
+  },
+  {
+    id: "link-m2",
+    clientId: "c1",
+    label: "Meet registration",
+    url: "https://example.com/local-meet",
+    sortOrder: 1,
+  },
+  {
+    id: "link-j1",
+    clientId: "c2",
+    label: "Training sheet",
+    url: "https://docs.google.com/spreadsheets/d/example-jordan-program",
+    sortOrder: 0,
+  },
+  {
+    id: "link-s1",
+    clientId: "c3",
+    label: "Rehab + training sheet",
+    url: "https://docs.google.com/spreadsheets/d/example-sam-program",
+    sortOrder: 0,
+  },
+  {
+    id: "link-a1",
+    clientId: "c4",
+    label: "Hypertrophy block",
+    url: "https://docs.google.com/spreadsheets/d/example-alex-program",
+    sortOrder: 0,
+  },
+  {
+    id: "link-t1",
+    clientId: "c5",
+    label: "Starter program",
+    url: "https://docs.google.com/spreadsheets/d/example-taylor-program",
+    sortOrder: 0,
+  },
+];
+
+export const SEED_NOTES = [
+  {
+    id: "note-m1",
+    clientId: "c1",
+    title: "Session cue — squat brace",
+    body: "Remind Maya to breathe into belt before unracking. Helped last intensity day.",
+  },
+  {
+    id: "note-m2",
+    clientId: "c1",
+    title: "Meet timeline",
+    body: "Target meet in ~10 weeks. Lock date once registration opens.",
+  },
+  {
+    id: "note-j1",
+    clientId: "c2",
+    title: "Travel week protocol",
+    body: "Hotel gym: goblet squat, DB press, RDLs. Keep steps high.",
+  },
+  {
+    id: "note-s1",
+    clientId: "c3",
+    title: "Knee status",
+    body: "No flare after belt squat. Physio happy with current range.",
+  },
+  {
+    id: "note-a1",
+    clientId: "c4",
+    title: "Pull volume bump",
+    body: "Add one more row variation next block. Alex asked for more back work.",
+  },
+  {
+    id: "note-t1",
+    clientId: "c5",
+    title: "Form progress",
+    body: "Hinge pattern cleaner. Still coaching knee tracking on squat.",
   },
 ];
 

@@ -17,6 +17,7 @@ type CoachStore = {
   ready: boolean;
   error: string | null;
   addCheckIn: (input: CheckInInput) => Promise<void>;
+  updateClient: (client: Client) => void;
   resetData: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -73,6 +74,10 @@ export function CoachProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const updateClient = useCallback((client: Client) => {
+    setClients((prev) => prev.map((c) => (c.id === client.id ? client : c)));
+  }, []);
+
   const resetData = useCallback(async () => {
     const data = await fetchJson<{ clients: Client[]; checkIns: CheckIn[] }>(
       "/api/reset",
@@ -89,10 +94,11 @@ export function CoachProvider({ children }: { children: ReactNode }) {
       ready,
       error,
       addCheckIn,
+      updateClient,
       resetData,
       refresh,
     }),
-    [clients, checkIns, ready, error, addCheckIn, resetData, refresh]
+    [clients, checkIns, ready, error, addCheckIn, updateClient, resetData, refresh]
   );
 
   return (

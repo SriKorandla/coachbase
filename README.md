@@ -6,6 +6,7 @@ Coach-facing prototype for managing PT clients: roster, weekly check-in notes, a
 
 - **Dashboard** — active client count, who still needs a check-in this week, recent notes
 - **Client roster** — searchable list with profile detail pages
+- **Client workspace** — Notion-style page body, program/resource links, searchable notes database
 - **Weekly check-ins** — body weight, energy, sleep, notes, optional squat e1RM
 - **Progress charts** — body weight and squat e1RM over time (per client)
 - **SQLite database** via Drizzle + libSQL (local file by default)
