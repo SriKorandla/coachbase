@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { deleteClient, getClient, updateClientPageBody } from "@/db/queries";
+import {
+  deleteClient,
+  getClient,
+  updateClientPageBody,
+  updateClientProfile,
+} from "@/db/queries";
 
 export const runtime = "nodejs";
 
@@ -25,16 +30,35 @@ export async function GET(_request: Request, { params }: Params) {
 export async function PATCH(request: Request, { params }: Params) {
   try {
     const { id } = await params;
-    const body = (await request.json()) as { pageBody?: string };
+    const body = (await request.json()) as {
+      pageBody?: string;
+      name?: string;
+      goal?: string;
+      startDate?: string;
+      notes?: string;
+    };
 
-    if (typeof body.pageBody !== "string") {
+    if (typeof body.pageBody === "string") {
+      const client = await updateClientPageBody(id, body.pageBody);
+      if (!client) {
+        return NextResponse.json({ error: "Client not found" }, { status: 404 });
+      }
+      return NextResponse.json(client);
+    }
+
+    if (!body.name?.trim() || !body.goal?.trim() || !body.startDate?.trim()) {
       return NextResponse.json(
-        { error: "pageBody is required" },
+        { error: "name, goal, and startDate are required" },
         { status: 400 }
       );
     }
 
-    const client = await updateClientPageBody(id, body.pageBody);
+    const client = await updateClientProfile(id, {
+      name: body.name,
+      goal: body.goal,
+      startDate: body.startDate,
+      notes: body.notes,
+    });
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }

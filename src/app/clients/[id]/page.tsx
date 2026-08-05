@@ -8,6 +8,7 @@ import { ClientLinks } from "@/components/ClientLinks";
 import { ClientNotesDb } from "@/components/ClientNotesDb";
 import { ClientPageBody } from "@/components/ClientPageBody";
 import { DeleteClientButton } from "@/components/DeleteClientButton";
+import { EditClientProfile } from "@/components/EditClientProfile";
 import { ProgressCharts } from "@/components/ProgressCharts";
 import { useCoach } from "@/lib/coach-context";
 import {
@@ -77,7 +78,8 @@ export default function ClientDetailPage() {
             </span>
           )}
         </div>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-4">
+          <EditClientProfile client={client} />
           <DeleteClientButton clientId={client.id} clientName={client.name} />
         </div>
       </div>

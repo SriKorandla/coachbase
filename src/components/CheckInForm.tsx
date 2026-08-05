@@ -2,37 +2,62 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useCoach } from "@/lib/coach-context";
-import type { CheckInInput, Rating } from "@/lib/types";
+import type { CheckIn, CheckInInput, Rating } from "@/lib/types";
 import { currentWeekOf } from "@/lib/utils";
 
 type Props = {
   defaultClientId?: string;
+  initial?: CheckIn;
   onSaved?: () => void;
+  onCancel?: () => void;
 };
 
 const ratings: Rating[] = [1, 2, 3, 4, 5];
 
-export function CheckInForm({ defaultClientId, onSaved }: Props) {
-  const { clients, addCheckIn } = useCoach();
+export function CheckInForm({
+  defaultClientId,
+  initial,
+  onSaved,
+  onCancel,
+}: Props) {
+  const { clients, addCheckIn, saveCheckIn } = useCoach();
+  const editing = Boolean(initial);
+
   const [clientId, setClientId] = useState(
-    defaultClientId ?? clients[0]?.id ?? ""
+    initial?.clientId ?? defaultClientId ?? clients[0]?.id ?? ""
   );
-  const [weekOf, setWeekOf] = useState(currentWeekOf());
-  const [bodyWeightLbs, setBodyWeightLbs] = useState("160");
-  const [energy, setEnergy] = useState<Rating>(4);
-  const [sleep, setSleep] = useState<Rating>(4);
-  const [notes, setNotes] = useState("");
-  const [squatEst1rm, setSquatEst1rm] = useState("");
+  const [weekOf, setWeekOf] = useState(initial?.weekOf ?? currentWeekOf());
+  const [bodyWeightLbs, setBodyWeightLbs] = useState(
+    initial ? String(initial.bodyWeightLbs) : "160"
+  );
+  const [energy, setEnergy] = useState<Rating>(initial?.energy ?? 4);
+  const [sleep, setSleep] = useState<Rating>(initial?.sleep ?? 4);
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [squatEst1rm, setSquatEst1rm] = useState(
+    initial?.squatEst1rm != null ? String(initial.squatEst1rm) : ""
+  );
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const lockedClient = Boolean(defaultClientId);
+  const lockedClient = Boolean(defaultClientId) || editing;
 
   useEffect(() => {
+    if (initial) {
+      setClientId(initial.clientId);
+      setWeekOf(initial.weekOf);
+      setBodyWeightLbs(String(initial.bodyWeightLbs));
+      setEnergy(initial.energy);
+      setSleep(initial.sleep);
+      setNotes(initial.notes);
+      setSquatEst1rm(
+        initial.squatEst1rm != null ? String(initial.squatEst1rm) : ""
+      );
+      return;
+    }
     if (defaultClientId) setClientId(defaultClientId);
     else if (!clientId && clients[0]) setClientId(clients[0].id);
-  }, [defaultClientId, clients, clientId]);
+  }, [defaultClientId, clients, clientId, initial]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -51,8 +76,12 @@ export function CheckInForm({ defaultClientId, onSaved }: Props) {
     setSaving(true);
     setFormError(null);
     try {
-      await addCheckIn(input);
-      setNotes("");
+      if (initial) {
+        await saveCheckIn(initial.id, input);
+      } else {
+        await addCheckIn(input);
+        setNotes("");
+      }
       setSaved(true);
       onSaved?.();
       window.setTimeout(() => setSaved(false), 2000);
@@ -70,13 +99,24 @@ export function CheckInForm({ defaultClientId, onSaved }: Props) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-display text-lg font-semibold tracking-tight">
-          Log check-in
+          {editing ? "Edit check-in" : "Log check-in"}
         </h2>
-        {saved ? (
-          <span className="text-xs font-semibold uppercase tracking-wider text-ok">
-            Saved
-          </span>
-        ) : null}
+        <div className="flex items-center gap-3">
+          {saved ? (
+            <span className="text-xs font-semibold uppercase tracking-wider text-ok">
+              Saved
+            </span>
+          ) : null}
+          {editing && onCancel ? (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="text-xs font-semibold uppercase tracking-wider text-ink-muted hover:text-ink"
+            >
+              Cancel
+            </button>
+          ) : null}
+        </div>
       </div>
       {formError ? (
         <p className="mt-3 text-sm text-signal">{formError}</p>
@@ -200,7 +240,7 @@ export function CheckInForm({ defaultClientId, onSaved }: Props) {
         disabled={saving}
         className="mt-5 bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-signal disabled:opacity-60"
       >
-        {saving ? "Saving…" : "Save check-in"}
+        {saving ? "Saving…" : editing ? "Update check-in" : "Save check-in"}
       </button>
     </form>
   );

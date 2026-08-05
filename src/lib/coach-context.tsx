@@ -14,6 +14,7 @@ import type {
   CheckInInput,
   Client,
   ClientCreateInput,
+  ClientUpdateInput,
 } from "@/lib/types";
 
 type CoachStore = {
@@ -22,9 +23,15 @@ type CoachStore = {
   ready: boolean;
   error: string | null;
   addCheckIn: (input: CheckInInput) => Promise<void>;
+  saveCheckIn: (id: string, input: CheckInInput) => Promise<void>;
+  removeCheckIn: (id: string) => Promise<void>;
   addClient: (input: ClientCreateInput) => Promise<Client>;
   removeClient: (id: string) => Promise<void>;
   updateClient: (client: Client) => void;
+  saveClientProfile: (
+    id: string,
+    input: ClientUpdateInput
+  ) => Promise<Client>;
   resetData: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -80,6 +87,30 @@ export function CoachProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const saveCheckIn = useCallback(async (id: string, input: CheckInInput) => {
+    const saved = await fetchJson<CheckIn>(`/api/check-ins/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    setCheckIns((prev) =>
+      prev
+        .filter(
+          (c) =>
+            c.id === saved.id ||
+            !(c.clientId === saved.clientId && c.weekOf === saved.weekOf)
+        )
+        .map((c) => (c.id === saved.id ? saved : c))
+    );
+  }, []);
+
+  const removeCheckIn = useCallback(async (id: string) => {
+    await fetchJson<{ ok: boolean }>(`/api/check-ins/${id}`, {
+      method: "DELETE",
+    });
+    setCheckIns((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
   const addClient = useCallback(async (input: ClientCreateInput) => {
     const created = await fetchJson<Client>("/api/clients", {
       method: "POST",
@@ -104,6 +135,23 @@ export function CoachProvider({ children }: { children: ReactNode }) {
     setClients((prev) => prev.map((c) => (c.id === client.id ? client : c)));
   }, []);
 
+  const saveClientProfile = useCallback(
+    async (id: string, input: ClientUpdateInput) => {
+      const saved = await fetchJson<Client>(`/api/clients/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      setClients((prev) =>
+        prev
+          .map((c) => (c.id === saved.id ? saved : c))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      return saved;
+    },
+    []
+  );
+
   const resetData = useCallback(async () => {
     const data = await fetchJson<{ clients: Client[]; checkIns: CheckIn[] }>(
       "/api/reset",
@@ -120,9 +168,12 @@ export function CoachProvider({ children }: { children: ReactNode }) {
       ready,
       error,
       addCheckIn,
+      saveCheckIn,
+      removeCheckIn,
       addClient,
       removeClient,
       updateClient,
+      saveClientProfile,
       resetData,
       refresh,
     }),
@@ -132,9 +183,12 @@ export function CoachProvider({ children }: { children: ReactNode }) {
       ready,
       error,
       addCheckIn,
+      saveCheckIn,
+      removeCheckIn,
       addClient,
       removeClient,
       updateClient,
+      saveClientProfile,
       resetData,
       refresh,
     ]

@@ -14,6 +14,13 @@ export type ClientCreateInput = {
   notes?: string;
 };
 
+export type ClientUpdateInput = {
+  name: string;
+  goal: string;
+  startDate: string;
+  notes?: string;
+};
+
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 export type CheckIn = {

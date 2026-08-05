@@ -16,6 +16,7 @@ import type {
   ClientLinkInput,
   ClientNote,
   ClientNoteInput,
+  ClientUpdateInput,
   Rating,
 } from "@/lib/types";
 
@@ -253,6 +254,25 @@ export async function updateClientPageBody(
   return getClient(id);
 }
 
+export async function updateClientProfile(
+  id: string,
+  input: ClientUpdateInput
+): Promise<Client | null> {
+  await seedIfEmpty();
+  const existing = await getClient(id);
+  if (!existing) return null;
+  await db
+    .update(clients)
+    .set({
+      name: input.name.trim(),
+      goal: input.goal.trim(),
+      startDate: input.startDate.trim(),
+      notes: input.notes?.trim() || null,
+    })
+    .where(eq(clients.id, id));
+  return getClient(id);
+}
+
 export async function listCheckIns(clientId?: string): Promise<CheckIn[]> {
   await seedIfEmpty();
   const rows = clientId
@@ -310,6 +330,70 @@ export async function upsertCheckIn(input: CheckInInput): Promise<CheckIn> {
   }
 
   return mapCheckIn(row);
+}
+
+export async function updateCheckIn(
+  id: string,
+  input: CheckInInput
+): Promise<CheckIn | "not_found" | "conflict"> {
+  await seedIfEmpty();
+  const rows = await db
+    .select()
+    .from(checkIns)
+    .where(eq(checkIns.id, id))
+    .limit(1);
+  if (!rows[0]) return "not_found";
+
+  const conflict = await db
+    .select()
+    .from(checkIns)
+    .where(
+      and(
+        eq(checkIns.clientId, input.clientId),
+        eq(checkIns.weekOf, input.weekOf)
+      )
+    )
+    .limit(1);
+  if (conflict[0] && conflict[0].id !== id) return "conflict";
+
+  const row = {
+    id,
+    clientId: input.clientId,
+    weekOf: input.weekOf,
+    bodyWeightLbs: input.bodyWeightLbs,
+    energy: input.energy,
+    sleep: input.sleep,
+    notes: input.notes,
+    squatEst1rm: input.squatEst1rm ?? null,
+    createdAt: rows[0].createdAt,
+  };
+
+  await db
+    .update(checkIns)
+    .set({
+      clientId: row.clientId,
+      weekOf: row.weekOf,
+      bodyWeightLbs: row.bodyWeightLbs,
+      energy: row.energy,
+      sleep: row.sleep,
+      notes: row.notes,
+      squatEst1rm: row.squatEst1rm,
+    })
+    .where(eq(checkIns.id, id));
+
+  return mapCheckIn(row);
+}
+
+export async function deleteCheckIn(id: string): Promise<boolean> {
+  await seedIfEmpty();
+  const rows = await db
+    .select()
+    .from(checkIns)
+    .where(eq(checkIns.id, id))
+    .limit(1);
+  if (!rows[0]) return false;
+  await db.delete(checkIns).where(eq(checkIns.id, id));
+  return true;
 }
 
 export async function listClientLinks(clientId: string): Promise<ClientLink[]> {
