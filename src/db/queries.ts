@@ -11,6 +11,7 @@ import type {
   CheckIn,
   CheckInInput,
   Client,
+  ClientCreateInput,
   ClientLink,
   ClientLinkInput,
   ClientNote,
@@ -206,6 +207,36 @@ export async function getClient(id: string): Promise<Client | null> {
     .where(eq(clients.id, id))
     .limit(1);
   return rows[0] ? mapClient(rows[0]) : null;
+}
+
+export async function createClient(
+  input: ClientCreateInput
+): Promise<Client> {
+  await seedIfEmpty();
+  const startDate =
+    input.startDate?.trim() || new Date().toISOString().slice(0, 10);
+  const row = {
+    id: `c-${Date.now()}`,
+    name: input.name.trim(),
+    goal: input.goal.trim(),
+    startDate,
+    notes: input.notes?.trim() || null,
+    pageBody: null as string | null,
+  };
+  await db.insert(clients).values(row);
+  return mapClient(row);
+}
+
+export async function deleteClient(id: string): Promise<boolean> {
+  await seedIfEmpty();
+  const existing = await getClient(id);
+  if (!existing) return false;
+
+  await db.delete(clientNotes).where(eq(clientNotes.clientId, id));
+  await db.delete(clientLinks).where(eq(clientLinks.clientId, id));
+  await db.delete(checkIns).where(eq(checkIns.clientId, id));
+  await db.delete(clients).where(eq(clients.id, id));
+  return true;
 }
 
 export async function updateClientPageBody(

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClient, updateClientPageBody } from "@/db/queries";
+import { deleteClient, getClient, updateClientPageBody } from "@/db/queries";
 
 export const runtime = "nodejs";
 
@@ -43,6 +43,23 @@ export async function PATCH(request: Request, { params }: Params) {
     console.error(error);
     return NextResponse.json(
       { error: "Failed to update client" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  try {
+    const { id } = await params;
+    const ok = await deleteClient(id);
+    if (!ok) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to delete client" },
       { status: 500 }
     );
   }

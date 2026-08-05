@@ -7,6 +7,7 @@ import { CheckInList } from "@/components/CheckInList";
 import { ClientLinks } from "@/components/ClientLinks";
 import { ClientNotesDb } from "@/components/ClientNotesDb";
 import { ClientPageBody } from "@/components/ClientPageBody";
+import { DeleteClientButton } from "@/components/DeleteClientButton";
 import { ProgressCharts } from "@/components/ProgressCharts";
 import { useCoach } from "@/lib/coach-context";
 import {
@@ -75,6 +76,9 @@ export default function ClientDetailPage() {
               Checked in
             </span>
           )}
+        </div>
+        <div className="mt-4 flex justify-end">
+          <DeleteClientButton clientId={client.id} clientName={client.name} />
         </div>
       </div>
 

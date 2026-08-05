@@ -9,7 +9,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { CheckIn, CheckInInput, Client } from "@/lib/types";
+import type {
+  CheckIn,
+  CheckInInput,
+  Client,
+  ClientCreateInput,
+} from "@/lib/types";
 
 type CoachStore = {
   clients: Client[];
@@ -17,6 +22,8 @@ type CoachStore = {
   ready: boolean;
   error: string | null;
   addCheckIn: (input: CheckInInput) => Promise<void>;
+  addClient: (input: ClientCreateInput) => Promise<Client>;
+  removeClient: (id: string) => Promise<void>;
   updateClient: (client: Client) => void;
   resetData: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -27,7 +34,9 @@ const CoachContext = createContext<CoachStore | null>(null);
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    const body = (await res.json().catch(() => null)) as {
+      error?: string;
+    } | null;
     throw new Error(body?.error ?? `Request failed (${res.status})`);
   }
   return res.json() as Promise<T>;
@@ -57,22 +66,39 @@ export function CoachProvider({ children }: { children: ReactNode }) {
       .finally(() => setReady(true));
   }, [refresh]);
 
-  const addCheckIn = useCallback(
-    async (input: CheckInInput) => {
-      const saved = await fetchJson<CheckIn>("/api/check-ins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      setCheckIns((prev) => {
-        const withoutDup = prev.filter(
-          (c) => !(c.clientId === saved.clientId && c.weekOf === saved.weekOf)
-        );
-        return [saved, ...withoutDup];
-      });
-    },
-    []
-  );
+  const addCheckIn = useCallback(async (input: CheckInInput) => {
+    const saved = await fetchJson<CheckIn>("/api/check-ins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    setCheckIns((prev) => {
+      const withoutDup = prev.filter(
+        (c) => !(c.clientId === saved.clientId && c.weekOf === saved.weekOf)
+      );
+      return [saved, ...withoutDup];
+    });
+  }, []);
+
+  const addClient = useCallback(async (input: ClientCreateInput) => {
+    const created = await fetchJson<Client>("/api/clients", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    setClients((prev) =>
+      [...prev, created].sort((a, b) => a.name.localeCompare(b.name))
+    );
+    return created;
+  }, []);
+
+  const removeClient = useCallback(async (id: string) => {
+    await fetchJson<{ ok: boolean }>(`/api/clients/${id}`, {
+      method: "DELETE",
+    });
+    setClients((prev) => prev.filter((c) => c.id !== id));
+    setCheckIns((prev) => prev.filter((c) => c.clientId !== id));
+  }, []);
 
   const updateClient = useCallback((client: Client) => {
     setClients((prev) => prev.map((c) => (c.id === client.id ? client : c)));
@@ -94,11 +120,24 @@ export function CoachProvider({ children }: { children: ReactNode }) {
       ready,
       error,
       addCheckIn,
+      addClient,
+      removeClient,
       updateClient,
       resetData,
       refresh,
     }),
-    [clients, checkIns, ready, error, addCheckIn, updateClient, resetData, refresh]
+    [
+      clients,
+      checkIns,
+      ready,
+      error,
+      addCheckIn,
+      addClient,
+      removeClient,
+      updateClient,
+      resetData,
+      refresh,
+    ]
   );
 
   return (

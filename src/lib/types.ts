@@ -7,6 +7,13 @@ export type Client = {
   pageBody?: string;
 };
 
+export type ClientCreateInput = {
+  name: string;
+  goal: string;
+  startDate?: string;
+  notes?: string;
+};
+
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
 export type CheckIn = {
